@@ -1,5 +1,12 @@
 import { makeAssistantToolUI } from "@assistant-ui/react";
-import { CloudIcon, DropletsIcon, WindIcon, SunIcon, CloudRainIcon, CloudSnowIcon } from "lucide-react";
+import {
+  CloudIcon,
+  CloudRainIcon,
+  CloudSnowIcon,
+  DropletsIcon,
+  SunIcon,
+  WindIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type WeatherArgs = {
@@ -34,7 +41,7 @@ const getWeatherIcon = (condition: string) => {
 };
 
 const getTemperatureColor = (temperature: number, unit: string) => {
-  const temp = unit === "fahrenheit" ? temperature : (temperature * 9/5) + 32;
+  const temp = unit === "fahrenheit" ? temperature : (temperature * 9) / 5 + 32;
   if (temp < 32) return "text-blue-600";
   if (temp < 50) return "text-blue-500";
   if (temp < 68) return "text-green-500";
@@ -53,7 +60,9 @@ export const WeatherToolUI = makeAssistantToolUI<WeatherArgs, WeatherResult>({
           </div>
           <div>
             <p className="font-medium text-blue-900">Checking weather...</p>
-            <p className="text-sm text-blue-700">Getting current conditions for {args.location}</p>
+            <p className="text-sm text-blue-700">
+              Getting current conditions for {args.location}
+            </p>
           </div>
         </div>
       );
@@ -66,7 +75,7 @@ export const WeatherToolUI = makeAssistantToolUI<WeatherArgs, WeatherResult>({
             <CloudIcon className="h-5 w-5 text-red-500" />
             <p className="font-medium text-red-900">Weather Error</p>
           </div>
-          <p className="text-sm text-red-700 mt-1">
+          <p className="mt-1 text-sm text-red-700">
             Failed to get weather data for {args.location}
           </p>
         </div>
@@ -81,15 +90,19 @@ export const WeatherToolUI = makeAssistantToolUI<WeatherArgs, WeatherResult>({
           <div className="flex items-center gap-3">
             {getWeatherIcon(result.condition)}
             <div>
-              <h3 className="text-xl font-bold text-gray-900">{result.location}</h3>
+              <h3 className="text-xl font-bold text-gray-900">
+                {result.location}
+              </h3>
               <p className="text-gray-600">{result.description}</p>
             </div>
           </div>
           <div className="text-right">
-            <div className={cn(
-              "text-4xl font-bold",
-              getTemperatureColor(result.temperature, result.unit)
-            )}>
+            <div
+              className={cn(
+                "text-4xl font-bold",
+                getTemperatureColor(result.temperature, result.unit),
+              )}
+            >
               {result.temperature}°
             </div>
             <p className="text-sm text-gray-500 uppercase">
@@ -110,7 +123,9 @@ export const WeatherToolUI = makeAssistantToolUI<WeatherArgs, WeatherResult>({
             <WindIcon className="h-5 w-5 text-gray-500" />
             <div>
               <p className="text-sm text-gray-600">Wind Speed</p>
-              <p className="font-semibold text-gray-900">{result.windSpeed} km/h</p>
+              <p className="font-semibold text-gray-900">
+                {result.windSpeed} km/h
+              </p>
             </div>
           </div>
         </div>

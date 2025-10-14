@@ -1,5 +1,5 @@
 import { google } from "@ai-sdk/google";
-import { convertToModelMessages, streamText, UIMessage, stepCountIs } from "ai";
+import { convertToModelMessages, stepCountIs, streamText, UIMessage } from "ai";
 import { weatherTool } from "@/tools/weather-tool";
 
 export async function POST(req: Request) {
@@ -13,20 +13,20 @@ export async function POST(req: Request) {
     },
     onStepFinish: ({ text, toolCalls, toolResults, finishReason, usage }) => {
       // Log step completion for debugging
-      console.log('Step finished:', {
+      console.log("Step finished:", {
         hasText: !!text,
         toolCallsCount: toolCalls.length,
         toolResultsCount: toolResults.length,
         finishReason,
-        usage
+        usage,
       });
     },
   });
 
   return result.toUIMessageStreamResponse({
     onError: (error) => {
-      console.error('Stream error:', error);
-      return 'An error occurred while processing your request. Please try again.';
+      console.error("Stream error:", error);
+      return "An error occurred while processing your request. Please try again.";
     },
   });
 }
