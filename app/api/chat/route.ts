@@ -1,6 +1,7 @@
 import { google } from "@ai-sdk/google";
 import { convertToModelMessages, stepCountIs, streamText, UIMessage } from "ai";
 import { weatherTool } from "@/tools/weather-tool";
+import { basicCodeTool } from "@/tools/basic-code-tool";
 
 export async function POST(req: Request) {
   const { messages }: { messages: UIMessage[] } = await req.json();
@@ -10,6 +11,7 @@ export async function POST(req: Request) {
     stopWhen: stepCountIs(5), // Allow up to 5 steps for multi-step tool calls
     tools: {
       getWeather: weatherTool,
+      generateBasicCode: basicCodeTool,
     },
     onStepFinish: ({ text, toolCalls, toolResults, finishReason, usage }) => {
       // Log step completion for debugging

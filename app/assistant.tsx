@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { Thread } from "@/components/assistant-ui/thread";
 import { WeatherToolUI } from "@/components/assistant-ui/weather-tool-ui";
+import { BasicCodeToolUI } from "@/components/assistant-ui/basic-code-tool-ui";
 import {
   SidebarInset,
   SidebarProvider,
@@ -61,6 +62,7 @@ export const Assistant = () => {
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       <WeatherToolUI />
+      <BasicCodeToolUI />
       <SidebarProvider>
         <div className="flex h-dvh w-full pr-0.5">
           <ThreadListSidebar />
