@@ -1,10 +1,11 @@
 "use client";
 
-import { AssistantRuntimeProvider } from "@assistant-ui/react";
+import { AssistantRuntimeProvider, AssistantCloud } from "@assistant-ui/react";
 import {
   AssistantChatTransport,
   useChatRuntime,
 } from "@assistant-ui/react-ai-sdk";
+import { useEffect, useState } from "react";
 import { Thread } from "@/components/assistant-ui/thread";
 import { WeatherToolUI } from "@/components/assistant-ui/weather-tool-ui";
 import {
@@ -24,10 +25,26 @@ import {
 } from "@/components/ui/breadcrumb";
 
 export const Assistant = () => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Create AssistantCloud instance for persistence
+  const cloud = process.env.NEXT_PUBLIC_ASSISTANT_BASE_URL 
+    ? new AssistantCloud({
+        baseUrl: process.env.NEXT_PUBLIC_ASSISTANT_BASE_URL,
+        anonymous: true, // Creates browser-session based user ID
+      })
+    : undefined;
+
   const runtime = useChatRuntime({
     transport: new AssistantChatTransport({
       api: "/api/chat",
     }),
+    // Use Assistant UI Cloud for chat history and persistence
+    cloud,
   });
 
   return (
