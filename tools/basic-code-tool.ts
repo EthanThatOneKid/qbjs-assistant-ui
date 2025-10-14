@@ -121,7 +121,8 @@ export const basicCodeTool = tool({
       }
     } else {
       // Use predefined template
-      const template = basicTemplates[programType as keyof typeof basicTemplates];
+      const template =
+        basicTemplates[programType as keyof typeof basicTemplates];
       programName = template.name;
       description = template.description;
       code = template.code;

@@ -1,5 +1,5 @@
 This is the [assistant-ui](https://github.com/Yonom/assistant-ui) starter
-project with QBJS-specific tools for BASIC code generation and weather information.
+project with a QBJS-specific tool for BASIC code generation.
 
 ## Getting Started
 
@@ -21,7 +21,6 @@ GOOGLE_GENERATIVE_AI_API_KEY=your-google-ai-api-key-here
 This app includes:
 
 - **BASIC Code Generation Tool**: Generate various types of BASIC programs with beautiful syntax highlighting
-- **Weather Tool**: Get current weather information for different cities
 - **Clean UI**: Modern, responsive interface built with assistant-ui
 - **No Authentication Required**: Simple setup without external dependencies
 

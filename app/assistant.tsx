@@ -6,7 +6,6 @@ import {
   useChatRuntime,
 } from "@assistant-ui/react-ai-sdk";
 import { Thread } from "@/components/assistant-ui/thread";
-import { WeatherToolUI } from "@/components/assistant-ui/weather-tool-ui";
 import { BasicCodeToolUI } from "@/components/assistant-ui/basic-code-tool-ui";
 import {
   SidebarInset,
@@ -33,7 +32,6 @@ export const Assistant = () => {
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <WeatherToolUI />
       <BasicCodeToolUI />
       <SidebarProvider>
         <div className="flex h-dvh w-full pr-0.5">
