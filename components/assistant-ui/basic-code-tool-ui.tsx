@@ -1,64 +1,45 @@
 import { makeAssistantToolUI } from "@assistant-ui/react";
-import { CodeIcon, CopyIcon, FileTextIcon } from "lucide-react";
+import { CodeIcon, CopyIcon, FileTextIcon, PlayIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type BasicCodeArgs = {
-  programType:
-    | "hello_world"
-    | "calculator"
-    | "countdown"
-    | "fibonacci"
-    | "guess_game"
-    | "custom";
-  customDescription?: string;
-  includeComments: boolean;
+  programData: string;
 };
 
 type BasicCodeResult = {
-  programName: string;
+  title: string;
   description: string;
   code: string;
-  programType: string;
+  features: string[];
   lineCount: number;
   language: string;
+  timestamp: string;
+  qbjsUrl: string;
 };
 
-const getProgramIcon = (programType: string) => {
-  switch (programType) {
-    case "hello_world":
-      return "👋";
-    case "calculator":
-      return "🧮";
-    case "countdown":
-      return "⏰";
-    case "fibonacci":
-      return "🔢";
-    case "guess_game":
-      return "🎯";
-    case "custom":
-      return "⚙️";
-    default:
-      return "💻";
-  }
+const getIcon = (title: string) => {
+  const lower = title.toLowerCase();
+  if (lower.includes("game")) return "🎮";
+  if (lower.includes("fractal")) return "🌀";
+  if (lower.includes("graphics") || lower.includes("circle")) return "🎨";
+  if (lower.includes("calculator") || lower.includes("math")) return "🧮";
+  if (lower.includes("hello")) return "👋";
+  return "💻";
 };
 
-const getProgramColor = (programType: string) => {
-  switch (programType) {
-    case "hello_world":
-      return "from-green-50 to-emerald-50 border-green-200";
-    case "calculator":
-      return "from-blue-50 to-cyan-50 border-blue-200";
-    case "countdown":
-      return "from-orange-50 to-amber-50 border-orange-200";
-    case "fibonacci":
-      return "from-purple-50 to-violet-50 border-purple-200";
-    case "guess_game":
-      return "from-pink-50 to-rose-50 border-pink-200";
-    case "custom":
-      return "from-gray-50 to-slate-50 border-gray-200";
-    default:
-      return "from-indigo-50 to-blue-50 border-indigo-200";
-  }
+const getColor = (title: string) => {
+  const lower = title.toLowerCase();
+  if (lower.includes("game"))
+    return "from-purple-50 to-violet-50 border-purple-200";
+  if (lower.includes("fractal"))
+    return "from-indigo-50 to-blue-50 border-indigo-200";
+  if (lower.includes("graphics") || lower.includes("circle"))
+    return "from-pink-50 to-rose-50 border-pink-200";
+  if (lower.includes("calculator") || lower.includes("math"))
+    return "from-orange-50 to-amber-50 border-orange-200";
+  if (lower.includes("hello"))
+    return "from-green-50 to-emerald-50 border-green-200";
+  return "from-blue-50 to-cyan-50 border-blue-200";
 };
 
 export const BasicCodeToolUI = makeAssistantToolUI<
@@ -87,12 +68,7 @@ export const BasicCodeToolUI = makeAssistantToolUI<
             <p className="font-medium text-blue-900">
               Generating BASIC code...
             </p>
-            <p className="text-sm text-blue-700">
-              Creating{" "}
-              {args.programType === "custom" ? "custom" : args.programType}{" "}
-              program
-              {args.customDescription && `: ${args.customDescription}`}
-            </p>
+            <p className="text-sm text-blue-700">Creating BASIC program</p>
           </div>
         </div>
       );
@@ -106,7 +82,7 @@ export const BasicCodeToolUI = makeAssistantToolUI<
             <p className="font-medium text-red-900">Code Generation Error</p>
           </div>
           <p className="mt-1 text-sm text-red-700">
-            Failed to generate BASIC code for {args.programType} program
+            Failed to generate BASIC code
           </p>
         </div>
       );
@@ -114,7 +90,7 @@ export const BasicCodeToolUI = makeAssistantToolUI<
 
     if (!result) return null;
 
-    const colorClasses = getProgramColor(result.programType);
+    const colorClasses = getColor(result.title);
 
     return (
       <div
@@ -126,12 +102,10 @@ export const BasicCodeToolUI = makeAssistantToolUI<
         {/* Header */}
         <div className="mb-4 flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">
-              {getProgramIcon(result.programType)}
-            </span>
+            <span className="text-2xl">{getIcon(result.title)}</span>
             <div>
               <h3 className="text-xl font-bold text-gray-900">
-                {result.programName}
+                {result.title}
               </h3>
               <p className="text-gray-600">{result.description}</p>
             </div>
@@ -141,6 +115,23 @@ export const BasicCodeToolUI = makeAssistantToolUI<
             <span>{result.lineCount} lines</span>
           </div>
         </div>
+
+        {/* Features */}
+        {result.features && result.features.length > 0 && (
+          <div className="mb-4">
+            <p className="mb-2 text-sm font-medium text-gray-700">Features:</p>
+            <div className="flex flex-wrap gap-2">
+              {result.features.map((feature, index) => (
+                <span
+                  key={index}
+                  className="rounded-full bg-white/60 px-3 py-1 text-xs font-medium text-gray-700"
+                >
+                  {feature}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Code Block */}
         <div className="relative">
@@ -153,13 +144,22 @@ export const BasicCodeToolUI = makeAssistantToolUI<
                 {result.language}
               </span>
             </div>
-            <button
-              onClick={handleCopy}
-              className="flex items-center gap-1 rounded px-2 py-1 text-xs transition-colors hover:bg-gray-700"
-            >
-              <CopyIcon className="h-3 w-3" />
-              Copy
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopy}
+                className="flex items-center gap-1 rounded px-2 py-1 text-xs transition-colors hover:bg-gray-700"
+              >
+                <CopyIcon className="h-3 w-3" />
+                Copy
+              </button>
+              <button
+                className="flex items-center gap-1 rounded px-2 py-1 text-xs transition-colors hover:bg-gray-700"
+                title="Run in QBJS"
+              >
+                <PlayIcon className="h-3 w-3" />
+                Run
+              </button>
+            </div>
           </div>
 
           <pre className="overflow-x-auto rounded-b-lg bg-gray-900 p-4 text-sm leading-relaxed text-gray-100">
@@ -170,10 +170,18 @@ export const BasicCodeToolUI = makeAssistantToolUI<
         {/* Footer */}
         <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
           <div className="flex items-center gap-4">
-            <span>Program Type: {result.programType}</span>
-            {args.includeComments && <span>• Comments included</span>}
+            <span>
+              Generated: {new Date(result.timestamp).toLocaleTimeString()}
+            </span>
           </div>
-          <span>Generated: {new Date().toLocaleTimeString()}</span>
+          <a
+            href={result.qbjsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800"
+          >
+            Try in QBJS →
+          </a>
         </div>
       </div>
     );
