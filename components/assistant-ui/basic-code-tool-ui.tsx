@@ -1,7 +1,6 @@
 import { makeAssistantToolUI } from "@assistant-ui/react";
-import { CodeIcon, CopyIcon, CheckIcon, FileTextIcon } from "lucide-react";
+import { CodeIcon, CopyIcon, FileTextIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 
 type BasicCodeArgs = {
   programType:
@@ -68,14 +67,10 @@ export const BasicCodeToolUI = makeAssistantToolUI<
 >({
   toolName: "generateBasicCode",
   render: ({ args, status, result }) => {
-    const [copied, setCopied] = useState(false);
-
     const handleCopy = async () => {
       if (result?.code) {
         try {
           await navigator.clipboard.writeText(result.code);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
         } catch (err) {
           console.error("Failed to copy code:", err);
         }
@@ -162,17 +157,8 @@ export const BasicCodeToolUI = makeAssistantToolUI<
               onClick={handleCopy}
               className="flex items-center gap-1 rounded px-2 py-1 text-xs transition-colors hover:bg-gray-700"
             >
-              {copied ? (
-                <>
-                  <CheckIcon className="h-3 w-3" />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <CopyIcon className="h-3 w-3" />
-                  Copy
-                </>
-              )}
+              <CopyIcon className="h-3 w-3" />
+              Copy
             </button>
           </div>
 

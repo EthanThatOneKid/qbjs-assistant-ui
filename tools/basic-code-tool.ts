@@ -121,7 +121,7 @@ export const basicCodeTool = tool({
       }
     } else {
       // Use predefined template
-      const template = basicTemplates[programType];
+      const template = basicTemplates[programType as keyof typeof basicTemplates];
       programName = template.name;
       description = template.description;
       code = template.code;
@@ -131,7 +131,7 @@ export const basicCodeTool = tool({
     if (includeComments) {
       const commentedCode = code
         .split("\n")
-        .map((line, index) => {
+        .map((line) => {
           if (
             line.trim() &&
             !line.includes("PRINT") &&
