@@ -216,6 +216,8 @@ Generate modern BASIC code without line numbers, following these guidelines:
 - Use proper indentation for readability
 - Include educational comments where helpful
 - Make code compatible with QB64/QBJS
+- For graphics programs, use SCREEN 12 (640x480) for consistent display sizing
+- Avoid using _NEWIMAGE with custom dimensions to ensure consistent iframe sizing
 
 IMPORTANT: The programData must be a valid JSON string. Use proper JSON formatting.`,
   };

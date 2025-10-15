@@ -1,7 +1,7 @@
 import { makeAssistantToolUI } from "@assistant-ui/react";
 import { CodeIcon, ExternalLinkIcon, CopyIcon, CheckIcon } from "lucide-react";
 import { BasicCodeInput, BasicCodeResponse } from "../../tools/basic-code-tool";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Separate component for the code preview with copy functionality
 const CodePreview = ({ code }: { code: string }) => {
@@ -27,6 +27,82 @@ const CodePreview = ({ code }: { code: string }) => {
       <pre className="overflow-x-auto pr-12 text-sm text-gray-100">
         <code>{code}</code>
       </pre>
+    </div>
+  );
+};
+
+// Dynamic iframe sizing component
+const DynamicIframe = ({
+  src,
+  title,
+  code,
+}: {
+  src: string;
+  title: string;
+  code: string;
+}) => {
+  const [dimensions, setDimensions] = useState({ width: 640, height: 480 });
+
+  useEffect(() => {
+    const calculateDimensions = () => {
+      // Calculate container width with more padding for better fit
+      const containerWidth = Math.min(window.innerWidth - 160, 640); // Account for padding and borders
+
+      // Use exact SCREEN 12 (640x480) aspect ratio for perfect fit
+      const baseWidth = Math.min(640, containerWidth);
+      const baseHeight = Math.min(480, baseWidth * 0.75); // Exact 4:3 ratio
+
+      // Ensure dimensions fit well within viewport
+      const minWidth = 480;
+      const minHeight = 360;
+      const maxWidth = Math.min(containerWidth, 640);
+      const maxHeight = Math.min(480, window.innerHeight * 0.6); // Allow up to 60% of viewport height
+
+      setDimensions({
+        width: Math.max(minWidth, Math.min(maxWidth, baseWidth)),
+        height: Math.max(minHeight, Math.min(maxHeight, baseHeight)),
+      });
+    };
+
+    calculateDimensions();
+
+    // Recalculate on window resize
+    const handleResize = () => {
+      calculateDimensions();
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [code]);
+
+  return (
+    <div className="relative w-full overflow-hidden rounded-lg border bg-gray-100">
+      <div
+        className="relative w-full overflow-hidden"
+        style={{
+          aspectRatio: `${dimensions.width}/${dimensions.height}`,
+          maxHeight: "60vh", // Increased to better accommodate SCREEN 12
+          maxWidth: "100%", // Ensure it doesn't exceed container width
+        }}
+      >
+        <iframe
+          src={src}
+          className="absolute inset-0 h-full w-full border-0"
+          title={title}
+          allow="fullscreen"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+          loading="lazy"
+          style={{
+            minHeight: "360px", // Restored to better match SCREEN 12 proportions
+            maxHeight: "100%", // Don't exceed container height
+            maxWidth: "100%", // Don't exceed container width
+          }}
+        />
+      </div>
+      {/* Resize indicator */}
+      <div className="absolute right-2 bottom-2 rounded bg-black/50 px-2 py-1 text-xs text-white">
+        {dimensions.width}×{dimensions.height}
+      </div>
     </div>
   );
 };
@@ -104,10 +180,10 @@ export const BasicCodeToolUI = makeAssistantToolUI<
     return (
       <div className="rounded-lg border bg-white shadow-sm">
         {/* Header */}
-        <div className="border-b bg-gray-50 px-6 py-4">
+        <div className="border-b bg-gray-50 px-4 py-3">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
-              <h3 className="mb-2 text-xl font-semibold text-gray-900">
+              <h3 className="mb-1 text-lg font-semibold text-gray-900">
                 {result.title}
               </h3>
               <p className="text-sm leading-relaxed text-gray-600">
@@ -129,21 +205,16 @@ export const BasicCodeToolUI = makeAssistantToolUI<
         </div>
 
         {/* Interactive QBJS iframe */}
-        <div className="relative w-full">
-          <div className="relative w-full" style={{ aspectRatio: "640/480" }}>
-            <iframe
-              src={result.qbjsIframeUrl}
-              className="absolute inset-0 h-full w-full border-0"
-              title={`${result.title} - QBJS Interactive Program`}
-              allow="fullscreen"
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-              loading="lazy"
-            />
-          </div>
+        <div className="overflow-hidden px-4 py-2">
+          <DynamicIframe
+            src={result.qbjsIframeUrl}
+            title={`${result.title} - QBJS Interactive Program`}
+            code={result.code}
+          />
         </div>
 
         {/* Code Preview */}
-        <div className="border-t bg-gray-50 px-6 py-4">
+        <div className="border-t bg-gray-50 px-4 py-2">
           <details className="group">
             <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
               View Source Code
@@ -153,9 +224,9 @@ export const BasicCodeToolUI = makeAssistantToolUI<
         </div>
 
         {/* Footer */}
-        <div className="border-t bg-gray-50 px-6 py-3">
+        <div className="border-t bg-gray-50 px-4 py-2">
           <div className="flex items-center justify-between text-xs text-gray-500">
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
               <span className="font-medium">
                 {result.lineCount} lines of BASIC code
               </span>
