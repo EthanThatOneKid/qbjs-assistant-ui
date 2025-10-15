@@ -2,18 +2,27 @@ This is a [assistant-ui](https://github.com/Yonom/assistant-ui) based BASIC prog
 
 ## Getting Started
 
-First, create a `.env.local` file with your API key:
+### API Key Setup
+
+You have two options to provide your Google Generative AI API key:
+
+#### Option 1: User-Provided API Key (Recommended for Public Deployments)
+
+1. Click the "API Key" button in the sidebar
+2. Enter your Google AI API key when prompted
+3. Get your free API key from [Google AI Studio](https://aistudio.google.com/app/api-keys)
+4. The key will be stored in localStorage and used for all requests
+
+#### Option 2: Environment Variable (For Development)
+
+Create a `.env.local` file with your API key:
 
 ```bash
-# Google AI API Key (required for the app to work)
+# Google AI API Key (optional fallback)
 GOOGLE_GENERATIVE_AI_API_KEY=your-google-ai-api-key-here
 ```
 
-### API Key Setup
-
-1. Get a free API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
-2. Add the key to your `.env.local` file
-3. Restart your development server
+**Note:** If both are provided, the environment variable takes precedence. If neither is available, users will be prompted to provide an API key via the sidebar.
 
 ### Features
 

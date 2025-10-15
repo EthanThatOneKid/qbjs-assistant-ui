@@ -27,6 +27,14 @@ export const Assistant = () => {
   const runtime = useChatRuntime({
     transport: new AssistantChatTransport({
       api: "/api/chat",
+      headers: (): Record<string, string> => {
+        const apiKey = localStorage.getItem("google-ai-api-key");
+        if (apiKey) {
+          return { authorization: `Bearer ${apiKey}` };
+        }
+
+        return {};
+      },
     }),
   });
 

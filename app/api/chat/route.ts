@@ -1,6 +1,10 @@
-import { google } from "@ai-sdk/google";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
+import { frontendTools } from "@assistant-ui/react-ai-sdk";
 import { basicCodeTool } from "@/tools/basic-code-tool";
+
+// Allow streaming responses up to 30 seconds
+export const maxDuration = 30;
 
 // Few-shot learning examples inspired by QB64.com samples.
 // https://qb64.com/samples.html
@@ -197,11 +201,41 @@ END`,
 ];
 
 export async function POST(req: Request) {
-  const { messages }: { messages: UIMessage[] } = await req.json();
+  const {
+    messages,
+    system,
+    tools,
+  }: {
+    messages: UIMessage[];
+    system?: string; // System message forwarded from AssistantChatTransport
+    tools?: Record<string, unknown>; // Frontend tools forwarded from AssistantChatTransport
+  } = await req.json();
 
-  const systemMessage = {
-    role: "system" as const,
-    content: `You are a BASIC programming assistant. Use the generateBasicCode tool when users ask for complete programs. 
+  // Get API key from environment variable or authorization header
+  const envApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  const authHeader = req.headers.get("authorization");
+  const userApiKey = authHeader?.replace("Bearer ", "");
+
+  // Use environment key if available, otherwise use user-provided key
+  const apiKey = userApiKey || envApiKey;
+
+  if (!apiKey) {
+    return new Response(
+      JSON.stringify({
+        error:
+          "API key required. Please set GOOGLE_GENERATIVE_AI_API_KEY environment variable or provide API key via the sidebar.",
+      }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  }
+
+  // Use system message from frontend if provided, otherwise use default
+  const systemMessage =
+    system ||
+    `You are a BASIC programming assistant. Use the generateBasicCode tool when users ask for complete programs. 
 
 The tool generates BASIC code and displays it as an interactive iframe that runs in QBJS, allowing users to immediately see and interact with their programs.
 
@@ -219,13 +253,25 @@ Generate modern BASIC code without line numbers, following these guidelines:
 - For graphics programs, use SCREEN 12 (640x480) for consistent display sizing
 - Avoid using _NEWIMAGE with custom dimensions to ensure consistent iframe sizing
 
-IMPORTANT: The programData must be a valid JSON string. Use proper JSON formatting.`,
-  };
+IMPORTANT: The programData must be a valid JSON string. Use proper JSON formatting.`;
+
+  const googleAI = createGoogleGenerativeAI({
+    apiKey: apiKey,
+  });
 
   const result = streamText({
-    model: google("models/gemini-2.5-flash"),
-    messages: [systemMessage, ...examples, ...convertToModelMessages(messages)],
+    model: googleAI("models/gemini-2.5-flash"),
+    system: systemMessage, // Use the system message directly
+    messages: [...examples, ...convertToModelMessages(messages)],
     tools: {
+      // Wrap frontend tools with frontendTools helper if they exist
+      ...(tools
+        ? frontendTools(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            tools as Record<string, { description?: string; parameters: any }>,
+          )
+        : {}),
+      // Backend tools
       generateBasicCode: basicCodeTool,
     },
     onStepFinish: ({ text, toolCalls, toolResults, finishReason, usage }) => {

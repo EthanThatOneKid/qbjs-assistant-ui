@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Github, MessagesSquare } from "lucide-react";
+import { Github, MessagesSquare, Key } from "lucide-react";
 import Link from "next/link";
 import {
   Sidebar,
@@ -12,10 +12,30 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { ThreadList } from "@/components/assistant-ui/thread-list";
+import { Button } from "@/components/ui/button";
 
 export function ThreadListSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
+  const handleApiKeyInput = () => {
+    const currentKey = localStorage.getItem("google-ai-api-key");
+    const message = currentKey
+      ? `Current API key: ${currentKey.substring(0, 8)}...\n\nEnter your Google AI API key:\n\nGet your key at: https://aistudio.google.com/app/api-keys`
+      : `Enter your Google AI API key:\n\nGet your key at: https://aistudio.google.com/app/api-keys`;
+
+    const newKey = prompt(message);
+
+    if (newKey !== null) {
+      if (newKey.trim() === "") {
+        localStorage.removeItem("google-ai-api-key");
+        alert("API key removed from localStorage");
+      } else {
+        localStorage.setItem("google-ai-api-key", newKey.trim());
+        alert("API key saved to localStorage");
+      }
+    }
+  };
+
   return (
     <Sidebar {...props}>
       <SidebarHeader className="aui-sidebar-header mb-2 border-b">
@@ -48,6 +68,17 @@ export function ThreadListSidebar({
       <SidebarRail />
       <SidebarFooter className="aui-sidebar-footer border-t">
         <SidebarMenu>
+          <SidebarMenuItem>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleApiKeyInput}
+              className="w-full justify-start gap-2"
+            >
+              <Key className="size-4" />
+              <span>API Key</span>
+            </Button>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link

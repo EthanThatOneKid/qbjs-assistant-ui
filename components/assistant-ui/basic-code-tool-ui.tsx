@@ -76,7 +76,7 @@ const DynamicIframe = ({
   }, [code]);
 
   return (
-    <div className="relative w-full overflow-hidden rounded-lg border bg-gray-100">
+    <div className="relative w-full overflow-hidden border bg-gray-100">
       <div
         className="relative w-full overflow-hidden"
         style={{
@@ -98,10 +98,6 @@ const DynamicIframe = ({
             maxWidth: "100%", // Don't exceed container width
           }}
         />
-      </div>
-      {/* Resize indicator */}
-      <div className="absolute right-2 bottom-2 rounded bg-black/50 px-2 py-1 text-xs text-white">
-        {dimensions.width}×{dimensions.height}
       </div>
     </div>
   );
