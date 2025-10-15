@@ -29,16 +29,51 @@ export const BasicCodeResponseSchema = z.object({
 // Type definition for the response using satisfies
 export type BasicCodeResponse = z.infer<typeof BasicCodeResponseSchema>;
 
+// Normalize and sanitize code to avoid Unicode artifacts in QBJS/QB64
+function sanitizeBasicCode(input: string): string {
+  // Normalize to NFC to keep characters consistent
+  let sanitized = input.normalize("NFC");
+
+  // Replace curly quotes and dashes with ASCII equivalents
+  sanitized = sanitized
+    .replace(/[\u2018\u2019\u2032]/g, "'") // single quotes / primes
+    .replace(/[\u201C\u201D\u2033]/g, '"') // double quotes
+    .replace(/[\u2013\u2014]/g, "-"); // en/em dashes
+
+  // Replace non-breaking spaces with regular spaces
+  sanitized = sanitized.replace(/\u00A0/g, " ");
+
+  // Remove zero-width and BOM characters that can corrupt editors
+  sanitized = sanitized.replace(/[\u200B-\u200D\uFEFF]/g, "");
+
+  // Standardize line endings to \n
+  sanitized = sanitized.replace(/\r\n?|\n/g, "\n");
+
+  // Finally, coerce to printable ASCII (allow tab, newline)
+  sanitized = sanitized.replace(/[^\t\n\r\x20-\x7E]/g, "?");
+
+  return sanitized;
+}
+
 // Base64 encoding function for QBJS compatibility
 function encodeUnicodeBase64(str: string): string {
-  // QBJS expects direct base64 encoding without URI encoding
-  return btoa(str);
+  // Convert Unicode string to UTF-8 bytes, then encode as base64
+  const utf8Bytes = new TextEncoder().encode(str);
+  const binaryString = Array.from(utf8Bytes, (byte) =>
+    String.fromCharCode(byte),
+  ).join("");
+  return btoa(binaryString);
 }
 
 // Base64 decoding function for QBJS compatibility
 function decodeUnicodeBase64(str: string): string {
-  // QBJS uses direct base64 encoding without URI encoding
-  return atob(str);
+  // Decode base64 to binary and convert UTF-8 bytes back to Unicode
+  const binaryString = atob(str);
+  const utf8Bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    utf8Bytes[i] = binaryString.charCodeAt(i);
+  }
+  return new TextDecoder().decode(utf8Bytes);
 }
 
 export const basicCodeTool = tool({
@@ -75,7 +110,7 @@ export const basicCodeTool = tool({
       }
 
       // Extract and validate code
-      const code = String(data.code || "");
+      const code = sanitizeBasicCode(String(data.code || ""));
       const title = String(data.title || "BASIC Program");
       const description = String(data.description || "A BASIC program");
 
