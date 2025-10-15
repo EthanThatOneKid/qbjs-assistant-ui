@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "QBJS Assistant UI",
-  description: "QBJS.org conversational AI agent user interface.",
+  title: "QBJS Assistant",
+  description: "QBJS.org conversational AI agent for BASIC programming.",
 };
 
 export default function RootLayout({

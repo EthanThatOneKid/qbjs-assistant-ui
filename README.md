@@ -1,4 +1,4 @@
-This is a [assistant-ui](https://github.com/Yonom/assistant-ui) based BASIC programming assistant that generates QB64/QBJS code using few-shot learning examples inspired by [QB64.com samples](https://qb64.com/samples/qbjs.html).
+This is a QBJS-based BASIC programming assistant that generates QB64/QBJS code using few-shot learning examples inspired by [QB64.com samples](https://qb64.com/samples/qbjs.html).
 
 ## Getting Started
 
@@ -32,7 +32,7 @@ This app includes:
 - **Few-shot Learning**: Uses diverse examples from QB64.com and QBJS samples to teach the AI (games, graphics, math, algorithms, interactive programs)
 - **Graphics & Games**: Create fractals, games, graphics programs, and more
 - **Educational**: Well-commented code that teaches programming concepts
-- **Clean UI**: Modern, responsive interface built with assistant-ui
+- **Clean UI**: Modern, responsive interface built for QBJS
 - **No Authentication Required**: Simple setup without external dependencies
 
 ### What You Can Create
