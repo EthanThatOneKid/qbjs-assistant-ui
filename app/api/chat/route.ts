@@ -15,7 +15,7 @@ const example = [
       {
         toolCallId: "dice-game-1",
         toolName: "generateBasicCode",
-        args: {
+        input: {
           programData: JSON.stringify({
             title: "Dice Game",
             description:
@@ -43,6 +43,8 @@ export async function POST(req: Request) {
   const systemMessage = {
     role: "system" as const,
     content: `You are a BASIC programming assistant. Use the generateBasicCode tool when users ask for complete programs. 
+
+The tool generates BASIC code and displays it as an interactive iframe that runs in QBJS, allowing users to immediately see and interact with their programs.
 
 The tool takes a single parameter called "programData" which should be a JSON string containing:
 - title: Program name
