@@ -20,7 +20,7 @@ GOOGLE_GENERATIVE_AI_API_KEY=your-google-ai-api-key-here
 This app includes:
 
 - **Open-ended BASIC Code Generation**: Generate any type of BASIC program through natural conversation
-- **Few-shot Learning**: Uses examples from QB64.com samples to teach the AI
+- **Few-shot Learning**: Uses diverse examples from QB64.com and QBJS samples to teach the AI (games, graphics, math, algorithms, interactive programs)
 - **Graphics & Games**: Create fractals, games, graphics programs, and more
 - **Educational**: Well-commented code that teaches programming concepts
 - **Clean UI**: Modern, responsive interface built with assistant-ui
@@ -30,10 +30,11 @@ This app includes:
 
 The assistant can generate various types of BASIC programs:
 
-- **Graphics**: Circles, lines, fractals, screensavers, turtle graphics
-- **Games**: Dice games, guessing games, simple arcade games
+- **Graphics**: Circles, lines, fractals, screensavers, turtle graphics, particle effects
+- **Games**: Dice games, guessing games, simple arcade games, interactive drawing
 - **Math**: Calculators, Fibonacci sequences, binary counters, geometric calculations
-- **Interactive**: Programs that respond to user input
+- **Interactive**: Programs that respond to user input, mouse interaction, real-time drawing
+- **Animation**: Particle systems, animated graphics, visual effects
 - **Educational**: Programs that demonstrate programming concepts
 
 ### Chat Behavior

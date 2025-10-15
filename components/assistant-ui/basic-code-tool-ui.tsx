@@ -1,28 +1,42 @@
 import { makeAssistantToolUI } from "@assistant-ui/react";
-import { CodeIcon, ExternalLinkIcon } from "lucide-react";
+import { CodeIcon, ExternalLinkIcon, CopyIcon, CheckIcon } from "lucide-react";
+import { BasicCodeInput, BasicCodeResponse } from "../../tools/basic-code-tool";
+import { useState } from "react";
 
-type BasicCodeArgs = {
-  programData: string;
-};
+// Separate component for the code preview with copy functionality
+const CodePreview = ({ code }: { code: string }) => {
+  const [copied, setCopied] = useState(false);
 
-type BasicCodeResult = {
-  title: string;
-  description: string;
-  code: string;
-  features: string[];
-  lineCount: number;
-  language: string;
-  timestamp: string;
-  qbjsUrl: string;
-  qbjsIframeUrl: string;
+  return (
+    <div className="relative mt-3 rounded-md bg-gray-900 p-4">
+      <button
+        onClick={() => {
+          navigator.clipboard.writeText(code);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        }}
+        className="absolute top-2 right-2 rounded-md bg-gray-800 p-1.5 text-gray-300 transition-colors hover:bg-gray-700 hover:text-white"
+        title="Copy code to clipboard"
+      >
+        {copied ? (
+          <CheckIcon className="h-4 w-4" />
+        ) : (
+          <CopyIcon className="h-4 w-4" />
+        )}
+      </button>
+      <pre className="overflow-x-auto pr-12 text-sm text-gray-100">
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
 };
 
 export const BasicCodeToolUI = makeAssistantToolUI<
-  BasicCodeArgs,
-  BasicCodeResult
+  BasicCodeInput,
+  BasicCodeResponse
 >({
   toolName: "generateBasicCode",
-  render: ({ status, result }) => {
+  render: ({ status, result, args }) => {
     if (status.type === "running") {
       return (
         <div className="flex items-center gap-4 rounded-lg border bg-blue-50 p-6">
@@ -33,7 +47,11 @@ export const BasicCodeToolUI = makeAssistantToolUI<
             <p className="font-medium text-blue-900">
               Generating BASIC code...
             </p>
-            <p className="mt-1 text-sm text-blue-700">Creating BASIC program</p>
+            <p className="mt-1 text-sm text-blue-700">
+              {args?.title
+                ? `Creating ${args.title}`
+                : "Creating BASIC program"}
+            </p>
           </div>
         </div>
       );
@@ -119,8 +137,19 @@ export const BasicCodeToolUI = makeAssistantToolUI<
               title={`${result.title} - QBJS Interactive Program`}
               allow="fullscreen"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+              loading="lazy"
             />
           </div>
+        </div>
+
+        {/* Code Preview */}
+        <div className="border-t bg-gray-50 px-6 py-4">
+          <details className="group">
+            <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
+              View Source Code
+            </summary>
+            <CodePreview code={result.code} />
+          </details>
         </div>
 
         {/* Footer */}
@@ -135,7 +164,7 @@ export const BasicCodeToolUI = makeAssistantToolUI<
               </span>
             </div>
             <div className="flex items-center gap-2">
-              {result.features && result.features.length > 0 && (
+              {result.features && result.features.length > 0 ? (
                 <div className="flex gap-1.5">
                   {result.features.slice(0, 3).map((feature, index) => (
                     <span
@@ -151,6 +180,10 @@ export const BasicCodeToolUI = makeAssistantToolUI<
                     </span>
                   )}
                 </div>
+              ) : (
+                <span className="text-xs font-medium text-gray-400">
+                  Interactive BASIC Program
+                </span>
               )}
             </div>
           </div>
