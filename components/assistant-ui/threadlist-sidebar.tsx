@@ -20,7 +20,10 @@ export function ThreadListSidebar({
   const handleApiKeyInput = () => {
     const currentKey = localStorage.getItem("google-ai-api-key");
     const message = currentKey
-      ? `Current API key: ${currentKey.substring(0, 8)}...\n\nEnter your Google AI API key:\n\nGet your key at: https://aistudio.google.com/app/api-keys`
+      ? `Current API key: ${currentKey.substring(
+          0,
+          8,
+        )}...\n\nEnter your Google AI API key:\n\nGet your key at: https://aistudio.google.com/app/api-keys`
       : `Enter your Google AI API key:\n\nGet your key at: https://aistudio.google.com/app/api-keys`;
 
     const newKey = prompt(message);

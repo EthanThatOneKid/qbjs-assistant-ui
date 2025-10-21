@@ -1,7 +1,7 @@
 import { makeAssistantToolUI } from "@assistant-ui/react";
-import { CodeIcon, ExternalLinkIcon, CopyIcon, CheckIcon } from "lucide-react";
+import { CheckIcon, CodeIcon, CopyIcon, ExternalLinkIcon } from "lucide-react";
 import { BasicCodeInput, BasicCodeResponse } from "../../tools/basic-code-tool";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // Separate component for the code preview with copy functionality
 const CodePreview = ({ code }: { code: string }) => {

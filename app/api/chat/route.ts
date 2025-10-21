@@ -1,204 +1,14 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import type { ModelMessage } from "ai";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
 import { frontendTools } from "@assistant-ui/react-ai-sdk";
 import { basicCodeTool } from "@/tools/basic-code-tool";
+import samples from "./samples.json";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
-// Few-shot learning examples inspired by QB64.com samples.
-// https://qb64.com/samples.html
-// https://github.com/boxgaming/qbjs/wiki/Samples
-const examples = [
-  {
-    role: "user" as const,
-    content: "Create a dice game",
-  },
-  {
-    role: "assistant" as const,
-    content: "I'll create a fun dice game for you!",
-    toolCalls: [
-      {
-        toolCallId: "dice-game-1",
-        toolName: "generateBasicCode",
-        input: {
-          programData: JSON.stringify({
-            title: "Dice Game",
-            description:
-              "A fun dice game that rolls two dice and shows special results",
-            code: `RANDOMIZE TIMER
-PRINT "Welcome to the Dice Game!"
-DO
-    INPUT "Roll dice? (Y/N): ", ANSWER$
-    IF UCASE$(ANSWER$) = "N" THEN EXIT DO
-    DICE1 = INT(RND * 6) + 1
-    DICE2 = INT(RND * 6) + 1
-    PRINT "Dice 1: "; DICE1; " Dice 2: "; DICE2; " Total: "; DICE1 + DICE2
-LOOP
-END`,
-          }),
-        },
-      },
-    ],
-  },
-  {
-    role: "user" as const,
-    content: "Show me binary numbers from 0 to 15",
-  },
-  {
-    role: "assistant" as const,
-    content: "I'll create a program that displays binary numbers!",
-    toolCalls: [
-      {
-        toolCallId: "binary-counter-1",
-        toolName: "generateBasicCode",
-        input: {
-          programData: JSON.stringify({
-            title: "Binary Counter",
-            description:
-              "Displays decimal numbers and their binary equivalents from 0 to 15",
-            code: `PRINT "Decimal to Binary Conversion"
-PRINT "========================"
-FOR I = 0 TO 15
-    PRINT I; " = "; BIN$(I)
-NEXT I
-END`,
-          }),
-        },
-      },
-    ],
-  },
-  {
-    role: "user" as const,
-    content: "Draw some colorful circles",
-  },
-  {
-    role: "assistant" as const,
-    content: "I'll create a graphics program with colorful circles!",
-    toolCalls: [
-      {
-        toolCallId: "graphics-circles-1",
-        toolName: "generateBasicCode",
-        input: {
-          programData: JSON.stringify({
-            title: "Colorful Circles",
-            description:
-              "Draws concentric circles in different colors using graphics mode",
-            code: `SCREEN 12
-PRINT "Drawing colorful circles..."
-CIRCLE (320, 240), 100, 15
-CIRCLE (320, 240), 80, 14
-CIRCLE (320, 240), 60, 13
-CIRCLE (320, 240), 40, 12
-CIRCLE (320, 240), 20, 10
-SLEEP
-END`,
-          }),
-        },
-      },
-    ],
-  },
-  {
-    role: "user" as const,
-    content: "Calculate the Fibonacci sequence",
-  },
-  {
-    role: "assistant" as const,
-    content:
-      "I'll create a program that calculates and displays the Fibonacci sequence!",
-    toolCalls: [
-      {
-        toolCallId: "fibonacci-1",
-        toolName: "generateBasicCode",
-        input: {
-          programData: JSON.stringify({
-            title: "Fibonacci Sequence",
-            description:
-              "Calculates and displays the first 15 numbers in the Fibonacci sequence",
-            code: `PRINT "Fibonacci Sequence"
-PRINT "=================="
-A = 0: B = 1
-PRINT A; B;
-FOR I = 1 TO 13
-    C = A + B
-    PRINT C;
-    A = B: B = C
-NEXT I
-PRINT
-END`,
-          }),
-        },
-      },
-    ],
-  },
-  {
-    role: "user" as const,
-    content: "Create an interactive drawing program",
-  },
-  {
-    role: "assistant" as const,
-    content:
-      "I'll create an interactive drawing program where you can draw with the mouse!",
-    toolCalls: [
-      {
-        toolCallId: "drawing-program-1",
-        toolName: "generateBasicCode",
-        input: {
-          programData: JSON.stringify({
-            title: "Interactive Drawing Program",
-            description:
-              "An interactive drawing program that lets you draw by clicking and dragging the mouse",
-            code: `SCREEN 12
-PRINT "Interactive Drawing Program"
-PRINT "Click and drag to draw!"
-PRINT "Press any key to clear screen"
-DO
-    IF _MOUSEBUTTON(1) THEN
-        PSET (_MOUSEX, _MOUSEY), 15
-    END IF
-    IF INKEY$ <> "" THEN CLS: PRINT "Screen cleared!"
-LOOP`,
-          }),
-        },
-      },
-    ],
-  },
-  {
-    role: "user" as const,
-    content: "Make a particle effect",
-  },
-  {
-    role: "assistant" as const,
-    content:
-      "I'll create a particle system that generates a fountain of particles!",
-    toolCalls: [
-      {
-        toolCallId: "particle-system-1",
-        toolName: "generateBasicCode",
-        input: {
-          programData: JSON.stringify({
-            title: "Particle Fountain",
-            description:
-              "Creates a particle fountain effect with randomly positioned circles",
-            code: `SCREEN 12
-PRINT "Particle Fountain Effect"
-FOR FRAME = 1 TO 50
-    CLS
-    FOR I = 1 TO 30
-        X = 320 + (RND - 0.5) * 100
-        Y = 200 + (RND - 0.5) * 100
-        COLOR = INT(RND * 15) + 1
-        CIRCLE (X, Y), 3, COLOR
-    NEXT I
-    SLEEP 0.1
-NEXT FRAME
-END`,
-          }),
-        },
-      },
-    ],
-  },
-];
+// Examples are imported from examples.json
 
 export async function POST(req: Request) {
   const {
@@ -262,7 +72,10 @@ IMPORTANT: The programData must be a valid JSON string. Use proper JSON formatti
   const result = streamText({
     model: googleAI("models/gemini-2.5-flash"),
     system: systemMessage, // Use the system message directly
-    messages: [...examples, ...convertToModelMessages(messages)],
+    messages: [
+      ...(samples as ModelMessage[]),
+      ...convertToModelMessages(messages),
+    ],
     tools: {
       // Wrap frontend tools with frontendTools helper if they exist
       ...(tools

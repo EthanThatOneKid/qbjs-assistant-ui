@@ -1,5 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
+import { makeQbjsUrl } from "@/lib/qbjs-utils";
 
 // Tool input schema - using single parameter to avoid streaming issues
 export const BasicCodeInputSchema = z.object({
@@ -55,27 +56,6 @@ function sanitizeBasicCode(input: string): string {
   return sanitized;
 }
 
-// Base64 encoding function for QBJS compatibility
-function encodeUnicodeBase64(str: string): string {
-  // Convert Unicode string to UTF-8 bytes, then encode as base64
-  const utf8Bytes = new TextEncoder().encode(str);
-  const binaryString = Array.from(utf8Bytes, (byte) =>
-    String.fromCharCode(byte),
-  ).join("");
-  return btoa(binaryString);
-}
-
-// Base64 decoding function for QBJS compatibility
-function decodeUnicodeBase64(str: string): string {
-  // Decode base64 to binary and convert UTF-8 bytes back to Unicode
-  const binaryString = atob(str);
-  const utf8Bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    utf8Bytes[i] = binaryString.charCodeAt(i);
-  }
-  return new TextDecoder().decode(utf8Bytes);
-}
-
 export const basicCodeTool = tool({
   description:
     "Generate BASIC programming code with interactive iframe. Use when user asks for code generation or programming examples. The result will be displayed as an interactive iframe that runs the code in QBJS.",
@@ -100,7 +80,9 @@ export const basicCodeTool = tool({
         console.error("JSON parse error:", parseError);
         console.error("Program data received:", programData);
         throw new Error(
-          `Invalid JSON format: ${parseError instanceof Error ? parseError.message : "Unknown error"}`,
+          `Invalid JSON format: ${
+            parseError instanceof Error ? parseError.message : "Unknown error"
+          }`,
         );
       }
 
@@ -119,44 +101,14 @@ export const basicCodeTool = tool({
         throw new Error("Code cannot be empty");
       }
 
-      // Use Unicode-safe base64 encoding that handles all characters properly
-      let encodedCode;
-      try {
-        // Check for abort before encoding
-        if (abortSignal?.aborted) {
-          throw new Error("Operation was aborted");
-        }
-
-        encodedCode = encodeUnicodeBase64(code);
-
-        // Validate the encoding worked
-        if (!encodedCode || encodedCode.length === 0) {
-          throw new Error("Base64 encoding resulted in empty string");
-        }
-
-        // Test that we can decode it back to verify integrity
-        const testDecoded = decodeUnicodeBase64(encodedCode);
-        if (testDecoded !== code) {
-          throw new Error(
-            "Encoding/decoding round-trip failed - data integrity issue",
-          );
-        }
-      } catch (encodingError) {
-        console.error("Unicode-safe base64 encoding failed:", encodingError);
-        throw new Error(
-          `Failed to encode code: ${encodingError instanceof Error ? encodingError.message : "Unknown encoding error"}`,
-        );
+      // Check for abort before URL generation
+      if (abortSignal?.aborted) {
+        throw new Error("Operation was aborted");
       }
 
-      // Create URL for external link (mode=code)
-      const qbjsUrl = new URL("https://qbjs.org/index.html");
-      qbjsUrl.searchParams.set("mode", "code");
-      qbjsUrl.searchParams.set("code", encodedCode);
-
-      // Create URL for iframe (mode=auto)
-      const qbjsIframeUrl = new URL("https://qbjs.org/index.html");
-      qbjsIframeUrl.searchParams.set("mode", "auto");
-      qbjsIframeUrl.searchParams.set("code", encodedCode);
+      // Generate QBJS URLs using the shared helper function
+      const qbjsUrl = makeQbjsUrl(code);
+      const qbjsIframeUrl = makeQbjsUrl(code, "auto");
 
       // Ensure consistent parameter order and format.
       const resultData = {
@@ -191,7 +143,9 @@ export const basicCodeTool = tool({
 
       const errorResultData = {
         title: "Error",
-        description: `Failed to generate program: ${error instanceof Error ? error.message : "Unknown error"}`,
+        description: `Failed to generate program: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
         code: "ERROR: Program generation failed",
         features: [],
         lineCount: 1,
